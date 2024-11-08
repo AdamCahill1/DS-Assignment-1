@@ -160,10 +160,7 @@ export class AuthAppStack extends cdk.Stack {
 
 
     const vehicleEndpoint = vehiclesEndpoint.addResource("{vehicleId}");
-    vehicleEndpoint.addMethod("GET", new apig.LambdaIntegration(getVehicleByIdFn), {
-      authorizer: requestAuthorizer,
-      authorizationType: apig.AuthorizationType.CUSTOM,
-    });  
+    vehicleEndpoint.addMethod("GET", new apig.LambdaIntegration(getVehicleByIdFn));  
 
   }
 
