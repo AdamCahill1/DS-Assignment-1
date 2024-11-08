@@ -12,7 +12,7 @@ import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as custom from "aws-cdk-lib/custom-resources";
 
 
-import { vehicles } from "../seed/vehicles";
+import { vehicles, vehicleFaults } from "../seed/vehicles";
 import { generateBatch } from "../shared/util";
 
 export class AuthAppStack extends cdk.Stack {

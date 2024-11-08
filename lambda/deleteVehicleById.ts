@@ -71,7 +71,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify({ Message: "You are not the owner of this Item and cannot update its values" }),
+        body: JSON.stringify({ Message: "You are not the owner of this Item and cannot delete it from the database" }),
       };
     }
 
