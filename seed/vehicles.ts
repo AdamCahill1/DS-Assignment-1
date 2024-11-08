@@ -61,12 +61,20 @@ export const vehicles : Vehicles[] = [
 
 
 export const vehicleFaults: VehicleFaults[] = [
+  //Both assigned to the same vehicle 848326 with same fault code 108203
   {
     vehicleId: 848326,
     faultName: "Wheel-Speed-Sensor",
     faultCode: 108203,
     faultMessage: "Back right wheel speed sensor not sending data.",
   },
+  {
+    vehicleId: 848326,
+    faultName: "Wheel-Speed-Sensor",
+    faultCode: 108203,
+    faultMessage: "Back left wheel speed sensor not sending data.",
+  },
+
   {
     vehicleId: 848326,
     faultName: "Engine-Overheat",

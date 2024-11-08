@@ -1,7 +1,7 @@
 import { marshall } from "@aws-sdk/util-dynamodb";
-import { Vehicles } from "../shared/types";
+import { Vehicles, VehicleFaults } from "../shared/types";
 
-type Entity = Vehicles; 
+type Entity = Vehicles | VehicleFaults; 
 export const generateItem = (entity: Entity) => {
   return {
     PutRequest: {

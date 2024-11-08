@@ -71,6 +71,19 @@ export class AuthAppStack extends cdk.Stack {
       tableName: "Vehicles",
     });
 
+    const vehicleFaultsTable = new dynamodb.Table(this, "VehicleFaultsTable", {
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      partitionKey: { name: "vehicleId", type: dynamodb.AttributeType.NUMBER },
+      sortKey: { name: "faultCode", type: dynamodb.AttributeType.NUMBER },
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      tableName: "VehicleFaults",
+    });
+
+    vehicleFaultsTable.addLocalSecondaryIndex({
+      indexName: "faultNameIx",
+      sortKey: { name: "faultName", type: dynamodb.AttributeType.STRING },
+    }); 
+
     const appApi = new apig.RestApi(this, "AppApi", {
       description: "App RestApi",
       endpointTypes: [apig.EndpointType.REGIONAL],
@@ -90,6 +103,7 @@ export class AuthAppStack extends cdk.Stack {
       handler: "handler",
       environment: {
         TABLE_NAME: vehiclesTable.tableName,
+        FAULTS_TABLE_NAME: vehicleFaultsTable.tableName,
         USER_POOL_ID: this.userPoolId,
         CLIENT_ID: this.userPoolClientId,
         REGION: cdk.Aws.REGION,
@@ -145,13 +159,13 @@ export class AuthAppStack extends cdk.Stack {
         parameters: {
           RequestItems: {
             [vehiclesTable.tableName]: generateBatch(vehicles),
-            //[movieCastsTable.tableName]: generateBatch(movieCasts),  // Added
+            [vehicleFaultsTable.tableName]: generateBatch(vehicleFaults),  
           },
         },
-        physicalResourceId: custom.PhysicalResourceId.of("vehiclesddbInitData"), //.of(Date.now().toString()),
+        physicalResourceId: custom.PhysicalResourceId.of("vehiclesddbInitData"), 
       },
       policy: custom.AwsCustomResourcePolicy.fromSdkCalls({
-        resources: [vehiclesTable.tableArn],  
+        resources: [vehiclesTable.tableArn, vehicleFaultsTable.tableArn],  
       }),
     });
 
@@ -180,6 +194,11 @@ export class AuthAppStack extends cdk.Stack {
       authorizer: requestAuthorizer,
       authorizationType: apig.AuthorizationType.CUSTOM,
     });
+
+    
+    const vehicleFaultsEndpoint = vehiclesEndpoint.addResource("faults");
+
+
   }
 
   private addAuthRoute(
