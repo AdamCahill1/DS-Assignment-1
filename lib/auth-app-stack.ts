@@ -117,6 +117,10 @@ export class AuthAppStack extends cdk.Stack {
       entry: "./lambda/getVehicleById.ts",
     });
 
+    const updateVehicleByIdFn = new node.NodejsFunction(this, "UpdateVehicleByIdFn", {
+      ...appCommonFnProps,
+      entry: "./lambda/updateVehicleById.ts",
+    });
 
     const requestAuthorizer = new apig.RequestAuthorizer(
       this,
@@ -148,6 +152,8 @@ export class AuthAppStack extends cdk.Stack {
 
     
     vehiclesTable.grantReadWriteData(newVehiclesFn)
+    vehiclesTable.grantReadWriteData(updateVehicleByIdFn)
+    
     vehiclesTable.grantReadData(getAllVehicleFn)
     vehiclesTable.grantReadData(getVehicleByIdFn)
 
@@ -161,7 +167,10 @@ export class AuthAppStack extends cdk.Stack {
 
     const vehicleEndpoint = vehiclesEndpoint.addResource("{vehicleId}");
     vehicleEndpoint.addMethod("GET", new apig.LambdaIntegration(getVehicleByIdFn));  
-
+    vehicleEndpoint.addMethod("PUT", new apig.LambdaIntegration(updateVehicleByIdFn), {
+      authorizer: requestAuthorizer,
+      authorizationType: apig.AuthorizationType.CUSTOM,
+    });
   }
 
   private addAuthRoute(

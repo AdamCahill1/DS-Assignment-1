@@ -24,7 +24,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
 
     if (!cookies) {
       return {
-        statusCode: 200,
+        statusCode: 403,
         body: "Unauthorised request!!",
       };
     }
