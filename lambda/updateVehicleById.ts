@@ -97,10 +97,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
     const updateResponse = await ddbDocClient.send(updateCommand);
     console.log("UpdateCommand response: ", updateResponse);
 
-
-   
-
-    // Return Response
+ 
     return {
       statusCode: 200,
       headers: {

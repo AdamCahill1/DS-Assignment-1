@@ -74,7 +74,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
     );
 
     return {
-      statusCode: 201,
+      statusCode: 200,
       headers: {
         "content-type": "application/json",
       },
@@ -92,7 +92,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
   }
 };
 
-// Helper function to create the DynamoDB Document Client
+
 function createDDbDocClient() {
   const ddbClient = new DynamoDBClient({ region: process.env.REGION });
   const marshallOptions = {

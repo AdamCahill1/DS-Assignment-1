@@ -7,7 +7,6 @@ const ddbClient = new DynamoDBClient({ region: process.env.REGION });
 
 export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
   try {
-    // Print Event
     console.log("Event: ", event);
 
     const commandOutput = await ddbDocClient.send(

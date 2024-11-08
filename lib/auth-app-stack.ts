@@ -122,6 +122,11 @@ export class AuthAppStack extends cdk.Stack {
       entry: "./lambda/updateVehicleById.ts",
     });
 
+    const deleteVehicleByIdFn = new node.NodejsFunction(this, "DeleteVehicleByIdFn", {
+      ...appCommonFnProps,
+      entry: "./lambda/deleteVehicleById.ts",
+    });
+
     const requestAuthorizer = new apig.RequestAuthorizer(
       this,
       "RequestAuthorizer",
@@ -153,7 +158,7 @@ export class AuthAppStack extends cdk.Stack {
     
     vehiclesTable.grantReadWriteData(newVehiclesFn)
     vehiclesTable.grantReadWriteData(updateVehicleByIdFn)
-    
+    vehiclesTable.grantReadWriteData(deleteVehicleByIdFn)
     vehiclesTable.grantReadData(getAllVehicleFn)
     vehiclesTable.grantReadData(getVehicleByIdFn)
 
@@ -168,6 +173,10 @@ export class AuthAppStack extends cdk.Stack {
     const vehicleEndpoint = vehiclesEndpoint.addResource("{vehicleId}");
     vehicleEndpoint.addMethod("GET", new apig.LambdaIntegration(getVehicleByIdFn));  
     vehicleEndpoint.addMethod("PUT", new apig.LambdaIntegration(updateVehicleByIdFn), {
+      authorizer: requestAuthorizer,
+      authorizationType: apig.AuthorizationType.CUSTOM,
+    });
+    vehicleEndpoint.addMethod("DELETE", new apig.LambdaIntegration(deleteVehicleByIdFn), {
       authorizer: requestAuthorizer,
       authorizationType: apig.AuthorizationType.CUSTOM,
     });
