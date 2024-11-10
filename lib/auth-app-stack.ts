@@ -198,6 +198,7 @@ export class AuthAppStack extends cdk.Stack {
     vehiclesTable.grantReadWriteData(deleteVehicleByIdFn)
     vehiclesTable.grantReadData(getAllVehicleFn)
     vehiclesTable.grantReadData(getVehicleByIdFn)
+    vehiclesTable.grantReadData(addVehicleFaultFn)
     
     vehicleFaultsTable.grantReadData(getVehicleFaultsFn)
     vehicleFaultsTable.grantReadWriteData(deleteFaultCodeFn)
@@ -229,7 +230,7 @@ export class AuthAppStack extends cdk.Stack {
       authorizer: requestAuthorizer,
       authorizationType: apig.AuthorizationType.CUSTOM,
     });
-    vehicleFaultsEndpoint.addMethod("PUT", new apig.LambdaIntegration(addVehicleFaultFn, { proxy: true }), {
+    vehicleFaultsEndpoint.addMethod("POST", new apig.LambdaIntegration(addVehicleFaultFn, { proxy: true }), {
       authorizer: requestAuthorizer,
       authorizationType: apig.AuthorizationType.CUSTOM,
     });
