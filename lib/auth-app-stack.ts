@@ -154,6 +154,16 @@ export class AuthAppStack extends cdk.Stack {
       entry: "./lambda/getVehicleFaults.ts",
     });
 
+    const deleteFaultCodeFn = new node.NodejsFunction(this, "DeleteFaultCodeFn", {
+      ...appCommonFnProps,
+      entry: "./lambda/deleteFaultCode.ts",
+    });
+
+    const addVehicleFaultFn = new node.NodejsFunction(this, "AddVehicleFaultFn", {
+      ...appCommonFnProps,
+      entry: "./lambda/addVehicleFault.ts",
+    });
+
     const requestAuthorizer = new apig.RequestAuthorizer(
       this,
       "RequestAuthorizer",
@@ -188,9 +198,10 @@ export class AuthAppStack extends cdk.Stack {
     vehiclesTable.grantReadWriteData(deleteVehicleByIdFn)
     vehiclesTable.grantReadData(getAllVehicleFn)
     vehiclesTable.grantReadData(getVehicleByIdFn)
-
-    vehicleFaultsTable.grantReadData(getVehicleFaultsFn)
     
+    vehicleFaultsTable.grantReadData(getVehicleFaultsFn)
+    vehicleFaultsTable.grantReadWriteData(deleteFaultCodeFn)
+    vehicleFaultsTable.grantReadWriteData(addVehicleFaultFn)
 
     const vehiclesEndpoint = appApi.root.addResource("vehicle");
     vehiclesEndpoint.addMethod("POST", new apig.LambdaIntegration(newVehiclesFn, { proxy: true }), {
@@ -214,7 +225,14 @@ export class AuthAppStack extends cdk.Stack {
 
     const vehicleFaultsEndpoint = vehiclesEndpoint.addResource("faults");
     vehicleFaultsEndpoint.addMethod("GET", new apig.LambdaIntegration(getVehicleFaultsFn, { proxy: true }));  
-
+    vehicleFaultsEndpoint.addMethod("DELETE", new apig.LambdaIntegration(deleteFaultCodeFn, { proxy: true }), {
+      authorizer: requestAuthorizer,
+      authorizationType: apig.AuthorizationType.CUSTOM,
+    });
+    vehicleFaultsEndpoint.addMethod("PUT", new apig.LambdaIntegration(addVehicleFaultFn, { proxy: true }), {
+      authorizer: requestAuthorizer,
+      authorizationType: apig.AuthorizationType.CUSTOM,
+    });
   }
 
   private addAuthRoute(
