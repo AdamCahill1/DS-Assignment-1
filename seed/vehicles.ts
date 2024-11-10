@@ -61,7 +61,7 @@ export const vehicles : Vehicles[] = [
 
 
 export const vehicleFaults: VehicleFaults[] = [
-  //Both assigned to the same vehicle 848326 with same fault code 108203
+  //Both assigned to the same vehicle 848326 with same fault code 108203 only the last number in the fault code is changed
   {
     vehicleId: 848326,
     faultName: "Wheel-Speed-Sensor",
@@ -71,7 +71,7 @@ export const vehicleFaults: VehicleFaults[] = [
   {
     vehicleId: 848326,
     faultName: "Wheel-Speed-Sensor",
-    faultCode: 108203,
+    faultCode: 108204,
     faultMessage: "Back left wheel speed sensor not sending data.",
   },
 

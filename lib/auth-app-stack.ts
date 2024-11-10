@@ -15,6 +15,14 @@ import * as custom from "aws-cdk-lib/custom-resources";
 import { vehicles, vehicleFaults } from "../seed/vehicles";
 import { generateBatch } from "../shared/util";
 
+
+//Add translation
+//add option to getFaults
+//addFaults
+//deleteFaults
+
+
+
 export class AuthAppStack extends cdk.Stack {
   private auth: apig.IResource;
   private userPoolId: string;
@@ -141,6 +149,11 @@ export class AuthAppStack extends cdk.Stack {
       entry: "./lambda/deleteVehicleById.ts",
     });
 
+    const getVehicleFaultsFn = new node.NodejsFunction(this, "GetVehicleFaultsFn", {
+      ...appCommonFnProps,
+      entry: "./lambda/getVehicleFaults.ts",
+    });
+
     const requestAuthorizer = new apig.RequestAuthorizer(
       this,
       "RequestAuthorizer",
@@ -176,28 +189,31 @@ export class AuthAppStack extends cdk.Stack {
     vehiclesTable.grantReadData(getAllVehicleFn)
     vehiclesTable.grantReadData(getVehicleByIdFn)
 
+    vehicleFaultsTable.grantReadData(getVehicleFaultsFn)
+    
+
     const vehiclesEndpoint = appApi.root.addResource("vehicle");
-    vehiclesEndpoint.addMethod("POST", new apig.LambdaIntegration(newVehiclesFn), {
+    vehiclesEndpoint.addMethod("POST", new apig.LambdaIntegration(newVehiclesFn, { proxy: true }), {
       authorizer: requestAuthorizer,
       authorizationType: apig.AuthorizationType.CUSTOM,
     });
-    vehiclesEndpoint.addMethod("GET", new apig.LambdaIntegration(getAllVehicleFn));
+    vehiclesEndpoint.addMethod("GET", new apig.LambdaIntegration(getAllVehicleFn, { proxy: true }));
 
 
     const vehicleEndpoint = vehiclesEndpoint.addResource("{vehicleId}");
-    vehicleEndpoint.addMethod("GET", new apig.LambdaIntegration(getVehicleByIdFn));  
-    vehicleEndpoint.addMethod("PUT", new apig.LambdaIntegration(updateVehicleByIdFn), {
+    vehicleEndpoint.addMethod("GET", new apig.LambdaIntegration(getVehicleByIdFn, { proxy: true }));  
+    vehicleEndpoint.addMethod("PUT", new apig.LambdaIntegration(updateVehicleByIdFn, { proxy: true }), {
       authorizer: requestAuthorizer,
       authorizationType: apig.AuthorizationType.CUSTOM,
     });
-    vehicleEndpoint.addMethod("DELETE", new apig.LambdaIntegration(deleteVehicleByIdFn), {
+    vehicleEndpoint.addMethod("DELETE", new apig.LambdaIntegration(deleteVehicleByIdFn, { proxy: true }), {
       authorizer: requestAuthorizer,
       authorizationType: apig.AuthorizationType.CUSTOM,
     });
 
-    
+
     const vehicleFaultsEndpoint = vehiclesEndpoint.addResource("faults");
-
+    vehicleFaultsEndpoint.addMethod("GET", new apig.LambdaIntegration(getVehicleFaultsFn, { proxy: true }));  
 
   }
 
