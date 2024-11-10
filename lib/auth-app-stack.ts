@@ -232,10 +232,7 @@ export class AuthAppStack extends cdk.Stack {
       authorizationType: apig.AuthorizationType.CUSTOM,
     });
 
-    //const translateVehicleEndpoint = vehicleEndpoint.addResource("{language}");
-    //translateVehicleEndpoint.addMethod("GET", new apig.LambdaIntegration(getTranslatedVehicleFn, { proxy: true }));
-
-
+    
     const vehicleFaultsEndpoint = vehiclesEndpoint.addResource("faults");
     vehicleFaultsEndpoint.addMethod("GET", new apig.LambdaIntegration(getVehicleFaultsFn, { proxy: true }));  
     vehicleFaultsEndpoint.addMethod("DELETE", new apig.LambdaIntegration(deleteFaultCodeFn, { proxy: true }), {

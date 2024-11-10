@@ -48,9 +48,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
 
     if (language) {
       if (item.translations && item.translations[language]?.about) {
-        item.about = item.translations[language].about;
+        item = { ...item, about: item.translations[language].about };
       } else {
-
         const translateCommand = new TranslateTextCommand({
           Text: item.about,
           SourceLanguageCode: "en",
@@ -58,8 +57,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
         });
         const translateResult = await translateClient.send(translateCommand);
         const translatedText = translateResult.TranslatedText!;
-        
-        item.about = translatedText;
+
+        item = { ...item, about: translatedText };
         item.translations = item.translations || {};
         item.translations[language] = { about: translatedText };
 
@@ -67,15 +66,13 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
           await ddbDocClient.send(
             new PutCommand({
               TableName: process.env.TABLE_NAME,
-              Item: item,
+              Item: { ...item, about: commandOutput.Item.about }, 
             })
           );
         }
-
       }
-      
-      const { translations, ...responseItem } = item;
 
+      const { translations, ...responseItem } = item;
       return {
         statusCode: 200,
         headers: {
@@ -97,7 +94,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
         body: JSON.stringify(body),
       };
     }
-
   } catch (error: any) {
     console.log(JSON.stringify(error));
     return {

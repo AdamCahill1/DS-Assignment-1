@@ -32,12 +32,14 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
 
     const processedItems = await Promise.all(
       items.map(async (item) => {
+        const originalAbout = item.about;
+    
         if (language) {
           if (item.translations && item.translations[language]?.about) {
             item.about = item.translations[language].about;
           } else {
             const translateCommand = new TranslateTextCommand({
-              Text: item.about,
+              Text: originalAbout,
               SourceLanguageCode: "en",
               TargetLanguageCode: language,
             });
@@ -52,13 +54,15 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
               await ddbDocClient.send(
                 new PutCommand({
                   TableName: process.env.TABLE_NAME,
-                  Item: item,
+                  Item: { ...item, about: originalAbout },
                 })
               );
             }
           }
-        } 
+        }
+    
         const { translations, ...responseItem } = item;
+        responseItem.about = language ? item.about : originalAbout;
         return responseItem;
       })
     );
