@@ -1,9 +1,11 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { TranslateClient, TranslateTextCommand } from "@aws-sdk/client-translate";
 
 const ddbDocClient = createDDbDocClient();
+const translateClient = new TranslateClient({ region: process.env.REGION });
 
 export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {     
   try {
@@ -11,6 +13,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
 
     const parameters  = event?.pathParameters;
     const vehicleId = parameters?.vehicleId ? parseInt(parameters.vehicleId) : undefined;
+    const language = event.queryStringParameters?.language;
+
+    
 
     if (!vehicleId) {
       return {
@@ -38,18 +43,61 @@ export const handler: APIGatewayProxyHandlerV2 = async (event: any) => {
         body: JSON.stringify({ Message: "Invalid Vehicle Id. Does not exist in the database" }),
       };
     }
-    const body = {
-      data: commandOutput.Item,
-    };  
-    
 
-    return {
-      statusCode: 200,
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(body),
-    };
+    let item = commandOutput.Item;
+
+    if (language) {
+      if (item.translations && item.translations[language]?.about) {
+        item.about = item.translations[language].about;
+      } else {
+
+        const translateCommand = new TranslateTextCommand({
+          Text: item.about,
+          SourceLanguageCode: "en",
+          TargetLanguageCode: language,
+        });
+        const translateResult = await translateClient.send(translateCommand);
+        const translatedText = translateResult.TranslatedText!;
+        
+        item.about = translatedText;
+        item.translations = item.translations || {};
+        item.translations[language] = { about: translatedText };
+
+        if (language !== "en") {
+          await ddbDocClient.send(
+            new PutCommand({
+              TableName: process.env.TABLE_NAME,
+              Item: item,
+            })
+          );
+        }
+
+      }
+      
+      const { translations, ...responseItem } = item;
+
+      return {
+        statusCode: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(responseItem),
+      };
+
+    } else {
+      const body = {
+        data: commandOutput.Item,
+      };
+      
+      return {
+        statusCode: 200,
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      };
+    }
+
   } catch (error: any) {
     console.log(JSON.stringify(error));
     return {
