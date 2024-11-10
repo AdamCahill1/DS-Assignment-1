@@ -196,7 +196,7 @@ export class AuthAppStack extends cdk.Stack {
     vehiclesTable.grantReadWriteData(newVehiclesFn)
     vehiclesTable.grantReadWriteData(updateVehicleByIdFn)
     vehiclesTable.grantReadWriteData(deleteVehicleByIdFn)
-    vehiclesTable.grantReadData(getAllVehicleFn)
+    vehiclesTable.grantReadWriteData(getAllVehicleFn)
     vehiclesTable.grantReadWriteData(getVehicleByIdFn)
     vehiclesTable.grantReadData(addVehicleFaultFn)
     
@@ -208,7 +208,10 @@ export class AuthAppStack extends cdk.Stack {
       actions: ["translate:TranslateText"],
       resources: ["*"],
     }));
-
+    getAllVehicleFn.addToRolePolicy(new iam.PolicyStatement({
+      actions: ["translate:TranslateText"],
+      resources: ["*"],
+    }));
 
     const vehiclesEndpoint = appApi.root.addResource("vehicle");
     vehiclesEndpoint.addMethod("POST", new apig.LambdaIntegration(newVehiclesFn, { proxy: true }), {
